@@ -1,0 +1,46 @@
+# docker/docker-compose.yml
+version: "3.9"
+
+services:
+  detector:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: proto-detector
+    user: "$UID:$GID"
+    working_dir: /workspace/src
+    volumes:
+      # 大量 clone する先（リポジトリ群）
+      - ../repos:/workspace/repos
+      # CSV や結果ファイルを置く場所
+      - ../results:/workspace/results
+      - ../logs:/workspace/logs
+      - ../data:/workspace/data:ro
+    command: ["python", "detect_protobuf_repos.py"]
+
+  collector:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: proto-collector
+    user: "$UID:$GID"
+    working_dir: /workspace/src
+    volumes:
+      - ../repos:/workspace/repos
+      - ../results:/workspace/results
+      - ../logs:/workspace/logs
+    command: ["python", "collect_transactions.py"]
+
+  analyzer:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: proto-analyzer
+    user: "$UID:$GID"
+    working_dir: /workspace/src
+    volumes:
+      - ../src:/workspace/src
+      - ../repos:/workspace/repos
+      - ../results:/workspace/results
+      - ../logs:/workspace/logs
+    command: ["python", "analyze_proto.py"]
