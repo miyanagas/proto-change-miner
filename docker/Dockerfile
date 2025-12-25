@@ -3,15 +3,12 @@
 FROM python:3.13.10-slim
 
 # ---- OS レベルの準備 ----
-# curl と git を入れる（uv インストールと GitPython 用）
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl git && \
+    apt-get install -y --no-install-recommends git && \
     rm -rf /var/lib/apt/lists/*
 
-# ---- uv をインストール ----
-# /root/.local/bin に入るので PATH に通す
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:${PATH}"
+# ---- uv を公式イメージからコピー（curl installより安定） ----
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /workspace
 
@@ -24,13 +21,7 @@ RUN uv sync --frozen --no-dev
 
 # コンテナ起動時に .venv の Python を優先して使う
 ENV PATH="/workspace/.venv/bin:${PATH}"
+ENV PYTHONPATH="/workspace/src"
 
-# ---- アプリケーションコードをコピー ----
-# 必要に応じて他のディレクトリも追加
-COPY src ./src
-
-# デフォルトの作業ディレクトリ
-WORKDIR /workspace/src
-
-# デフォルト CMD は解析スクリプトのヘルプを表示（compose で上書き可能）
-CMD ["python", "analyze_proto.py", "--help"]
+ENTRYPOINT ["bash", "-lc"]
+CMD ["echo 'Use: docker compose run --rm runner <command>'"]
