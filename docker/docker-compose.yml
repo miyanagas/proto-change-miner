@@ -1,46 +1,19 @@
 # docker/docker-compose.yml
-version: "3.9"
-
 services:
-  detector:
+  runner:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: proto-detector
-    user: "$UID:$GID"
-    working_dir: /workspace/src
+    container_name: proto-change-miner
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /workspace
     volumes:
-      # 大量 clone する先（リポジトリ群）
-      - ../repos:/workspace/repos
-      # CSV や結果ファイルを置く場所
-      - ../results:/workspace/results
-      - ../logs:/workspace/logs
-      - ../data:/workspace/data:ro
-    command: ["python", "detect_protobuf_repos.py"]
-
-  collector:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: proto-collector
-    user: "$UID:$GID"
-    working_dir: /workspace/src
-    volumes:
+      - ..:/workspace
       - ../repos:/workspace/repos
       - ../results:/workspace/results
       - ../logs:/workspace/logs
-    command: ["python", "collect_transactions.py"]
-
-  analyzer:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: proto-analyzer
-    user: "$UID:$GID"
-    working_dir: /workspace/src
-    volumes:
-      - ../src:/workspace/src
-      - ../repos:/workspace/repos
-      - ../results:/workspace/results
-      - ../logs:/workspace/logs
-    command: ["python", "analyze_proto.py"]
+    environment:
+      - PYTHONPATH=/workspace/src
+      - TZ=Asia/Tokyo
+    entrypoint: ["bash", "-lc"]
+    command: ["echo 'Use: docker compose run --rm runner <command>'"]
