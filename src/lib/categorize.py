@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import fnmatch
 import re
 from pathlib import Path
-from typing import Iterable, Tuple
+from typing import Tuple
 
 TEST_PAT = re.compile(r"(^|/)(test|tests|testing)(/|$)", re.IGNORECASE)
 CI_PAT = re.compile(r"(^|/)(ci|pipeline|workflows)(/|$)", re.IGNORECASE)
@@ -14,14 +15,36 @@ EXT_BUILD = {".gradle", ".xml"}  # Mavenのpom.xml等は xml判定でbuildへ寄
 EXT_INFRA = {".tf"}
 
 
-def should_skip(path: str, *, skip_prefixes: Tuple[str, ...], skip_suffixes: Tuple[str, ...]) -> bool:
+def should_skip(
+    path: str,
+    *,
+    skip_prefixes: Tuple[str, ...],
+    skip_suffixes: Tuple[str, ...],
+    skip_patterns: Tuple[str, ...] = (),
+) -> bool:
+    """指定されたパスをスキップすべきかを判定する。
+
+    Args:
+        path: チェック対象のファイルパス
+        skip_prefixes: スキップ対象のディレクトリプレフィックス
+        skip_suffixes: スキップ対象のファイル拡張子/サフィックス
+        skip_patterns: スキップ対象のファイル名パターン（fnmatch形式）
+    """
     lower = path.lower()
+    # プレフィックスチェック（ディレクトリ）
     for pre in skip_prefixes:
         if lower.startswith(pre):
             return True
+    # サフィックスチェック（拡張子など）
     for suf in skip_suffixes:
         if lower.endswith(suf):
             return True
+    # パターンチェック（ファイル名に対してfnmatch）
+    if skip_patterns:
+        filename = Path(lower).name
+        for pat in skip_patterns:
+            if fnmatch.fnmatch(filename, pat):
+                return True
     return False
 
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Tuple
 
+from lib.skip_rules import SKIP_PREFIXES, SKIP_SUFFIXES, SKIP_PATTERNS
+
 
 @dataclass(frozen=True)
 class BaseConfig:
@@ -10,20 +12,10 @@ class BaseConfig:
     out_dir: str
     workers: int = 4
 
-    # 解析対象外
-    skip_prefixes: Tuple[str, ...] = (
-        "docs/",
-        ".github/",
-        ".gitlab/",
-        "vendor/",
-        "third_party/",
-        "node_modules/",
-    )
-    skip_suffixes: Tuple[str, ...] = (
-        ".md", ".png", ".jpg", ".jpeg", ".gif", ".svg",
-        ".lock",
-        ".sum",
-    )
+    # 解析対象外ルール（skip_rules.py から読み込み）
+    skip_prefixes: Tuple[str, ...] = SKIP_PREFIXES
+    skip_suffixes: Tuple[str, ...] = SKIP_SUFFIXES
+    skip_patterns: Tuple[str, ...] = SKIP_PATTERNS
 
     # デバッグ・速度調整（Noneなら全件）
     max_all_commits: int | None = None

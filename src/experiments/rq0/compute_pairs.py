@@ -29,7 +29,7 @@ def _filtered_changed_files(repo_path: Path, commit: str, cfg: RQ0Config) -> lis
     files = changed_files_in_commit(repo_path, commit)
     return [
         p for p in files
-        if not should_skip(p, skip_prefixes=cfg.skip_prefixes, skip_suffixes=cfg.skip_suffixes)
+        if not should_skip(p, skip_prefixes=cfg.skip_prefixes, skip_suffixes=cfg.skip_suffixes, skip_patterns=cfg.skip_patterns)
     ]
 
 

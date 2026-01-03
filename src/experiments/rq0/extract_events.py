@@ -26,7 +26,7 @@ def extract_events_for_repo(repo_path: Path, cfg: RQ0Config, out_events_jsonl: P
             files = changed_files_in_commit(repo_path, c)
             files = [
                 p for p in files
-                if not should_skip(p, skip_prefixes=cfg.skip_prefixes, skip_suffixes=cfg.skip_suffixes)
+                if not should_skip(p, skip_prefixes=cfg.skip_prefixes, skip_suffixes=cfg.skip_suffixes, skip_patterns=cfg.skip_patterns)
             ]
 
             protobuf_files = [p for p in files if p.lower().endswith(".proto")]
